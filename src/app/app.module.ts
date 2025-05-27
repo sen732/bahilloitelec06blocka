@@ -16,7 +16,17 @@ import { Headercomponent } from './header/header.component';
 import {MatToolbarModule} from '@angular/material/toolbar';
 import {MatIconModule} from '@angular/material/icon';
 import { PostListComponent } from './posts/post-list/post-list.component';
-import { HttpClientModule } from '@angular/common/http';
+import { HttpClientModule,HTTP_INTERCEPTORS  } from '@angular/common/http';
+import { AppRoutingModule } from './posts/app-routing.module';
+import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
+import {ReactiveFormsModule} from '@angular/forms';  
+import {MatPaginatorModule} from '@angular/material/paginator';
+import { LoginComponent } from './authentication/login/login.component';
+import { SignupComponent } from './authentication/signup/signup.component';
+import { AuthInterceptor } from './authentication/auth-interceptor';
+import { AuthService } from './authentication/auth.service';
+import { PostsService } from './posts/posts.service';
+
 
 @NgModule({
   declarations: [
@@ -24,6 +34,8 @@ import { HttpClientModule } from '@angular/common/http';
     PostCreateComponent,
     Headercomponent,
     PostListComponent,
+    LoginComponent,
+    SignupComponent
     
   ],
   imports: [
@@ -34,13 +46,22 @@ import { HttpClientModule } from '@angular/common/http';
     MatButtonModule,
     MatCardModule,
     MatExpansionModule,
+    ReactiveFormsModule, 
     MatIconModule,
     MatToolbarModule,
     HttpClientModule,
-
-    BrowserAnimationsModule
+    AppRoutingModule,
+    MatProgressSpinnerModule,
+    BrowserAnimationsModule,
+    ReactiveFormsModule,
+    MatIconModule,
+    MatPaginatorModule
   ],
-  providers: [],
+  providers: [
+    PostsService, 
+    AuthService,
+    { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true }
+  ],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

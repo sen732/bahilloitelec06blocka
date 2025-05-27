@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { AuthService } from './authentication/auth.service';
 
 interface Post {
   id: number;
@@ -12,9 +13,10 @@ interface Post {
 })
 export class AppComponent {
   title = 'bahillo';
-  storedPosts: Post []=[];
-  onPostAdded(post:any): void {
-    this.storedPosts.push(post);
-  
+  constructor(private authService: AuthService) {}
+
+  ngOnInit() {
+    this.authService.autoAuthUser();
   }
 }
+  

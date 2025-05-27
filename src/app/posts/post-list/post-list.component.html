@@ -1,13 +1,82 @@
-<mat-card>
-  <mat-accordion multi="true" *ngIf="posts.length > 0">
-    <mat-expansion-panel *ngFor="let post of posts">
-      <mat-expansion-panel-header>{{ post.title }}</mat-expansion-panel-header>
-      <p>{{ post.content }}</p>
-      <mat-action-row>
-        <button mat-button color="accent">Edit</button>
-        <button mat-button>Delete</button>
-      </mat-action-row>
-    </mat-expansion-panel>
-  </mat-accordion>
-  <p *ngIf="posts.length === 0">No post added yet!</p>
-</mat-card>
+<mat-spinner *ngIf="isLoading"></mat-spinner>
+
+<!-- 🔍 Search bar -->
+<mat-form-field appearance="outline" style="width: 100%; margin-bottom: 16px;">
+  <mat-label>Search posts</mat-label>
+  <input
+    matInput
+    placeholder="Search by title or content"
+    [(ngModel)]="searchTerm"
+    (ngModelChange)="onSearchChange()"
+  />
+</mat-form-field>
+
+<mat-accordion multi="true" *ngIf="filteredPosts.length > 0 && !isLoading">
+  <mat-expansion-panel *ngFor="let post of filteredPosts">
+    <mat-expansion-panel-header>
+      <mat-panel-title>{{ post.title }}</mat-panel-title>
+    </mat-expansion-panel-header>
+
+    <div class="post-image" *ngIf="post.imagePath">
+      <img [src]="post.imagePath" [alt]="post.title" />
+    </div>
+
+    <div class="post-content">{{ post.content }}</div>
+
+    <!-- Reactions -->
+    <div class="emoji-reactions">
+      <button mat-button (click)="addReaction(post.id, '👍')">👍 {{ post.reactions?.['👍'] || 0 }}</button>
+      <button mat-button (click)="addReaction(post.id, '❤️')">❤️ {{ post.reactions?.['❤️'] || 0 }}</button>
+      <button mat-button (click)="addReaction(post.id, '😂')">😂 {{ post.reactions?.['😂'] || 0 }}</button>
+      <button mat-button (click)="addReaction(post.id, '😮')">😮 {{ post.reactions?.['😮'] || 0 }}</button>
+    </div>
+
+    <!-- Comments -->
+    <div class="comments-section">
+      <div *ngIf="hasComments(post.comments)">
+        <h4>Comments</h4>
+        <ul>
+          <li *ngFor="let comment of post.comments">{{ comment }}</li>
+        </ul>
+      </div>
+
+      <div *ngIf="userIsAuthenticated">
+        <mat-form-field appearance="fill" class="comment-form">
+          <input
+            matInput
+            placeholder="Write a comment..."
+            [(ngModel)]="commentInputs[post.id]" />
+        </mat-form-field>
+        <button mat-raised-button color="accent" (click)="addComment(post.id)">
+          Add Comment
+        </button>
+      </div>
+    </div>
+
+    <!-- Edit/Delete -->
+    <mat-action-row *ngIf="userIsAuthenticated">
+      <a mat-raised-button color="primary" [routerLink]="['/edit', post.id]">
+        <mat-icon>edit</mat-icon>
+      </a>
+      <button mat-raised-button color="warn" (click)="onDelete(post.id)">
+        <mat-icon>delete</mat-icon>
+      </button>
+    </mat-action-row>
+  </mat-expansion-panel>
+</mat-accordion>
+
+<!-- Show paginator only if there are filtered results -->
+<mat-paginator
+  *ngIf="filteredPosts.length > 0"
+  [length]="totalPosts"
+  [pageSize]="postsPerPage"
+  [pageSizeOptions]="pageSizeOptions"
+  [pageIndex]="currentPage - 1"
+  (page)="onChangedPage($event)">
+</mat-paginator>
+
+<!-- Empty message -->
+<p class="info-text mat-body-1" *ngIf="filteredPosts.length === 0 && !isLoading">
+  No matching posts found.
+</p>
+
